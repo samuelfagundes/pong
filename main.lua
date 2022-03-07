@@ -78,12 +78,12 @@ function love.draw()
     love.graphics.setFont(scoreFont)
     love.graphics.print(
         tostring(player1Score),
-        VIRTUAL_WIDTH / 2 - 70,
-        VIRTUAL_HEIGHT / 4)
+        VIRTUAL_WIDTH / 2 - 50,
+        VIRTUAL_HEIGHT / 3)
     love.graphics.print(
         tostring(player1Score),
-        VIRTUAL_WIDTH / 2 + 50,
-        VIRTUAL_HEIGHT / 4)
+        VIRTUAL_WIDTH / 2 + 30,
+        VIRTUAL_HEIGHT / 3)
 
     -- Player 1 paddle
     love.graphics.rectangle('fill', 10, player1Y, 5, 20)
