@@ -15,6 +15,9 @@ function love.load()
     -- Filter to take out the blur filter
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
+    -- Create a random seed based on time passed, will always be different
+    math.randomseed(os.time())
+
     -- Add the fonts
     smallFont = love.graphics.newFont('/fonts/font.ttf', 8)
     scoreFont = love.graphics.newFont('/fonts/font.ttf', 32)
@@ -23,7 +26,7 @@ function love.load()
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
         resizable = false,
-        vsync = false
+        vsync = true
     })
 
     -- Define players score
@@ -33,20 +36,36 @@ function love.load()
     -- Paddle initial Y position
     player1Y = 30
     player2Y = VIRTUAL_HEIGHT - 50
+
+    -- Variables to set ball position
+    ballX = VIRTUAL_WIDTH / 2 - 2
+    ballY = VIRTUAL_HEIGHT / 2 - 2
+
+    -- Change ball velocity (Delta X/Y)
+    ballDX = math.random(2) == 1 and 100 or -100
+    ballDY = math.random(-50, 50)
+
+    gameState = 'start'
 end
 
 function love.update(dt)
-    -- Allows the movement of the paddles
+    -- Allows the movement of the player 1 paddles
     if love.keyboard.isDown('w') then
-        player1Y = player1Y + -PADDLE_SPEED * dt
+        player1Y = math.max(0, player1Y + -PADDLE_SPEED * dt)
     elseif love.keyboard.isDown('s') then
-        player1Y = player1Y + PADDLE_SPEED * dt
+        player1Y = math.min(VIRTUAL_HEIGHT - 20, player1Y + PADDLE_SPEED * dt)
+    end
+    
+    -- Allows the movement of the player 2 paddles
+    if love.keyboard.isDown('up') then
+        player2Y = math.max(0, player2Y + -PADDLE_SPEED * dt)
+    elseif love.keyboard.isDown('down') then
+        player2Y = math.min(VIRTUAL_HEIGHT - 20, player2Y + PADDLE_SPEED * dt)
     end
 
-    if love.keyboard.isDown('up') then
-        player2Y = player2Y + -PADDLE_SPEED * dt
-    elseif love.keyboard.isDown('down') then
-        player2Y = player2Y + PADDLE_SPEED * dt
+    if gameState == 'play' then
+        ballX = ballX + ballDX * dt
+        ballY = ballY + ballDY * dt
     end
 end
 
@@ -54,6 +73,18 @@ function love.keypressed(key)
     -- Close the program using 'esc'
     if key == 'escape' then
         love.event.quit()
+    elseif key == 'enter' or key == 'return' then
+        if gameState == 'start' then
+            gameState = 'play'
+        else
+            gamestate = 'start'
+
+            ballX = VIRTUAL_WIDTH / 2 - 2
+            ballY = VIRTUAL_HEIGHT / 2 - 2
+
+            ballDX = math.random(2) == 1 and 100 or -100
+            ballDY = math.random(-50, 50) * 1.5
+        end
     end
 end
 
@@ -66,16 +97,20 @@ function love.draw()
 
     -- Set the font size and print the text 'Hello Pong!' on the screen
     love.graphics.setFont(smallFont)
+    
+    if gameState == 'start' then
     love.graphics.printf(
-        'Hello Pong!',
+        'Press ENTER to play!',
         0,
         20,
         VIRTUAL_WIDTH,
         'center'
     )
+    end
 
     -- Change font and show the score
     love.graphics.setFont(scoreFont)
+
     love.graphics.print(
         tostring(player1Score),
         VIRTUAL_WIDTH / 2 - 50,
@@ -85,14 +120,12 @@ function love.draw()
         VIRTUAL_WIDTH / 2 + 30,
         VIRTUAL_HEIGHT / 3)
 
-    -- Player 1 paddle
+    -- Render player 1 paddle
     love.graphics.rectangle('fill', 10, player1Y, 5, 20)
-
-    -- Player 2 paddle
+    -- Render player 2 paddle
     love.graphics.rectangle('fill', VIRTUAL_WIDTH - 10, player2Y, 5, 20)
-
-    -- Ball
-    love.graphics.rectangle('fill', VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
+    -- Render ball (center)
+    love.graphics.rectangle('fill', ballX, ballY, 4, 4)
 
     push:apply('end')
 end
