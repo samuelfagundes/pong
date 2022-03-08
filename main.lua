@@ -1,4 +1,9 @@
-local push = require 'libraries/push'
+push = require 'libraries/push'
+Class = require 'libraries/class'
+
+require 'Classes/Paddle'
+
+require 'Classes/Ball'
 
 -- Variable to set window size
 WINDOW_WIDTH = 1280
@@ -33,17 +38,10 @@ function love.load()
     player1Score = 0
     player2Score = 0
 
-    -- Paddle initial Y position
-    player1Y = 30
-    player2Y = VIRTUAL_HEIGHT - 50
+   player1 = Paddle(10, 30, 5, 20)
+   player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT - 30, 5, 20)
 
-    -- Variables to set ball position
-    ballX = VIRTUAL_WIDTH / 2 - 2
-    ballY = VIRTUAL_HEIGHT / 2 - 2
-
-    -- Change ball velocity (Delta X/Y)
-    ballDX = math.random(2) == 1 and 100 or -100
-    ballDY = math.random(-50, 50)
+   ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
     gameState = 'start'
 end
@@ -51,22 +49,28 @@ end
 function love.update(dt)
     -- Allows the movement of the player 1 paddles
     if love.keyboard.isDown('w') then
-        player1Y = math.max(0, player1Y + -PADDLE_SPEED * dt)
+        player1.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('s') then
-        player1Y = math.min(VIRTUAL_HEIGHT - 20, player1Y + PADDLE_SPEED * dt)
+        player1.dy = PADDLE_SPEED
+    else
+        player1.dy = 0
     end
     
     -- Allows the movement of the player 2 paddles
     if love.keyboard.isDown('up') then
-        player2Y = math.max(0, player2Y + -PADDLE_SPEED * dt)
+        player2.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('down') then
-        player2Y = math.min(VIRTUAL_HEIGHT - 20, player2Y + PADDLE_SPEED * dt)
+        player2.dy = PADDLE_SPEED
+    else
+        player2.dy = 0
     end
 
     if gameState == 'play' then
-        ballX = ballX + ballDX * dt
-        ballY = ballY + ballDY * dt
+        ball:update(dt)
     end
+
+    player1:update(dt)
+    player2:update(dt)
 end
 
 function love.keypressed(key)
@@ -79,11 +83,7 @@ function love.keypressed(key)
         else
             gamestate = 'start'
 
-            ballX = VIRTUAL_WIDTH / 2 - 2
-            ballY = VIRTUAL_HEIGHT / 2 - 2
-
-            ballDX = math.random(2) == 1 and 100 or -100
-            ballDY = math.random(-50, 50) * 1.5
+            ball:reset()
         end
     end
 end
@@ -121,11 +121,11 @@ function love.draw()
         VIRTUAL_HEIGHT / 3)
 
     -- Render player 1 paddle
-    love.graphics.rectangle('fill', 10, player1Y, 5, 20)
+    player1:render()
     -- Render player 2 paddle
-    love.graphics.rectangle('fill', VIRTUAL_WIDTH - 10, player2Y, 5, 20)
+    player2:render()
     -- Render ball (center)
-    love.graphics.rectangle('fill', ballX, ballY, 4, 4)
+    ball:render()
 
     push:apply('end')
 end
